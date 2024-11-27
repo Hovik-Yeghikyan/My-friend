@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/users"})
+@WebFilter(urlPatterns = {"/main","/users","/sendFriendRequest"})
 public class AuthFilter extends HttpFilter {
 
     @Override
@@ -21,7 +21,7 @@ public class AuthFilter extends HttpFilter {
         if (user != null) {
             chain.doFilter(req, res);
         } else {
-            res.sendRedirect("/");
+            res.sendRedirect("/login");
 
         }
     }

@@ -1,9 +1,7 @@
 package com.vector.myfriend.servlet;
 
 import com.vector.myfriend.model.FriendRequest;
-import com.vector.myfriend.model.User;
 import com.vector.myfriend.service.FriendRequestService;
-import com.vector.myfriend.service.UserService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,17 +10,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-
-@WebServlet("/sendFriendRequest")
-public class SendFriendRequestServlet extends HttpServlet {
+@WebServlet("/rejectFriendRequest")
+public class RejectFriendRequestServlet extends HttpServlet {
 
     private FriendRequestService friendRequestService = new FriendRequestService();
 
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = (User) req.getSession().getAttribute("user");
-        int friendId = Integer.parseInt(req.getParameter("friendId"));
-        friendRequestService.add(user.getId(), friendId);
-        resp.sendRedirect("/users");
+        int requestId = Integer.parseInt(req.getParameter("requestId"));
+        FriendRequest friendRequest = friendRequestService.getFriendRequestById(requestId);
+        if (friendRequest == null) {
+            resp.sendRedirect("/users");
+        } else {
+            friendRequestService.deleteFriendRequest(friendRequest.getId());
+            resp.sendRedirect("/users");
+        }
     }
 }

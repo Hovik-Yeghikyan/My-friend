@@ -2,12 +2,12 @@ package com.vector.myfriend.service;
 
 import com.vector.myfriend.db.DBConnectionProvider;
 import com.vector.myfriend.model.FriendRequest;
-import com.vector.myfriend.model.User;
 import com.vector.myfriend.util.DateUtil;
 
 import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FriendRequestService {
@@ -16,42 +16,83 @@ public class FriendRequestService {
     private Connection connection = DBConnectionProvider.getInstance().getConnection();
     private UserService userService = new UserService();
 
-    public void add(FriendRequest friendRequest) {
-        String query = "INSERT INTO friend_request(from_id,to_id,date) VALUES(?,?,?)";
-        try (PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, friendRequest.getSender().getId());
-            ps.setInt(2, friendRequest.getRecipient().getId());
-            ps.setString(3, DateUtil.fromWebToString(friendRequest.getDate()));
-            ps.executeUpdate();
-            ResultSet generatedKeys = ps.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int id = generatedKeys.getInt(1);
-                friendRequest.setId(id);
-            }
+    public void add(int fromId, int toId) {
+        String sql = "INSERT INTO friend_request(from_id,to_id, date) VALUES " +
+                "(?,?,?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, fromId);
+            preparedStatement.setInt(2, toId);
+            preparedStatement.setString(3, DateUtil.fromDateToSqlDateTimeString(new Date()));
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
     }
 
-    public List<FriendRequest> getAllRequests() {
-        String sql = "SELECT * from friend_request";
-        List<FriendRequest> result = new ArrayList<>();
-        try {
-            Statement statement = connection.createStatement();
+    public List<FriendRequest> getFriendRequestsByToId(int toId) {
+        String sql = "SELECT * from friend_request WHERE to_id = " + toId;
+        List<FriendRequest> friendRequestList = new ArrayList<>();
+        try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                FriendRequest friendRequest = new FriendRequest();
-                friendRequest.setId(resultSet.getInt("id"));
-                friendRequest.setSender(userService.getUserById(resultSet.getInt("from_id")));
-                friendRequest.setRecipient(userService.getUserById(resultSet.getInt("to_id")));
-                friendRequest.setDate(DateUtil.fromStringToWeb(resultSet.getString("date")));
-                result.add(friendRequest);
+                friendRequestList.add(FriendRequest.builder()
+                        .id(resultSet.getInt(1))
+                        .fromUser(userService.getUserById(resultSet.getInt(2)))
+                        .date(DateUtil.fromSqlStringToDate(resultSet.getString(4)))
+                        .build());
             }
         } catch (SQLException | ParseException e) {
             e.printStackTrace();
         }
-        return result;
+        return friendRequestList;
+    }
+
+
+    public List<FriendRequest> getFriendRequestsByFromId(int fromId) {
+        String sql = "SELECT * from friend_request WHERE from_id = " + fromId;
+        List<FriendRequest> friendRequestList = new ArrayList<>();
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                friendRequestList.add(FriendRequest.builder()
+                        .id(resultSet.getInt(1))
+                        .toUser(userService.getUserById(resultSet.getInt(3)))
+                        .date(DateUtil.fromSqlStringToDate(resultSet.getString(4)))
+                        .build());
+            }
+        } catch (SQLException | ParseException e) {
+            e.printStackTrace();
+        }
+        return friendRequestList;
+    }
+
+    public FriendRequest getFriendRequestById(int requestId) {
+        String sql = "SELECT * from friend_request WHERE id = " + requestId;
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                return FriendRequest.builder()
+                        .id(resultSet.getInt(1))
+                        .fromUser(userService.getUserById(resultSet.getInt(2)))
+                        .toUser(userService.getUserById(resultSet.getInt(3)))
+                        .date(DateUtil.fromSqlStringToDate(resultSet.getString(4)))
+                        .build();
+            }
+        } catch (SQLException | ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void deleteFriendRequest(int requestId) {
+        String sql = "DELETE FROM friend_request WHERE id = " + requestId;
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }

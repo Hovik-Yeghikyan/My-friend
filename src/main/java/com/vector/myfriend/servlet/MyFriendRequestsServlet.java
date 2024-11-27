@@ -1,6 +1,7 @@
 package com.vector.myfriend.servlet;
 
 import com.vector.myfriend.model.FriendRequest;
+import com.vector.myfriend.model.User;
 import com.vector.myfriend.service.FriendRequestService;
 
 import javax.servlet.ServletException;
@@ -11,15 +12,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/notifications")
-public class NotificationsServlet extends HttpServlet {
+@WebServlet("/myFriendRequests")
+public class MyFriendRequestsServlet extends HttpServlet {
 
-    FriendRequestService friendRequestService = new FriendRequestService();
+    private FriendRequestService friendRequestService = new FriendRequestService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<FriendRequest> friendRequests = friendRequestService.getAllRequests();
-        req.setAttribute("friendRequests", friendRequests);
-        req.getRequestDispatcher("/WEB-INF/notifications.jsp").forward(req, resp);
+        User user = (User) req.getSession().getAttribute("user");
+        List<FriendRequest> friendRequestList = friendRequestService.getFriendRequestsByToId(user.getId());
+        req.setAttribute("friendRequestList", friendRequestList);
+        req.getRequestDispatcher("/WEB-INF/friendRequests.jsp").forward(req, resp);
     }
 }

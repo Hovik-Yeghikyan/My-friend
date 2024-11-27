@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Message {
 
     private int id;
@@ -18,5 +18,4 @@ public class Message {
     private User toUser;
     private String message;
     private Date date;
-
 }

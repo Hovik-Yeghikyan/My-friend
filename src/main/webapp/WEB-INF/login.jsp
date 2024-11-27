@@ -4,20 +4,21 @@
     <title>Login</title>
 </head>
 <body>
-<span>
-    <%
-        if (session.getAttribute("msg") != null) {%>
-    <h3 style="color: red"> <%=session.getAttribute("msg")%></h3>
-    <%
-            session.removeAttribute("msg");
-        }
-    %>
-</span>
 
+<%
+    if (session.getAttribute("msg") != null) { %>
+<h3><%=session.getAttribute("msg")%>
+</h3>
+<% session.removeAttribute("msg");
+}
+%>
 <form action="/login" method="post">
-    email:<input type="text" name="email"><br>
-    password:<input type="password" name="password"><br>
-    <input type="submit" value="Login">
+
+    email: <input type="text" name="email"><br>
+    password: <input type="password" name="password"><br>
+    <input type="submit">
+
 </form>
+<a href="/register">register</a>
 </body>
 </html>

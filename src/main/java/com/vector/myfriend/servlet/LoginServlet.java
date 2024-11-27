@@ -29,7 +29,7 @@ public class LoginServlet extends HttpServlet {
         User user = userService.getUserByEmailAndPassword(email, password);
         if (user != null) {
             req.getSession().setAttribute("user", user);
-          resp.sendRedirect("/");
+          resp.sendRedirect("/main");
         }else {
             req.getSession().setAttribute("msg","Username or password is incorrect");
           resp.sendRedirect("/login");

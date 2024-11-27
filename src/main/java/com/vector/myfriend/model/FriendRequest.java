@@ -13,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class FriendRequest {
     private int id;
-    private User sender;
-    private User recipient;
+    private User fromUser;
+    private User toUser;
     private Date date;
 }
